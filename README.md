@@ -1,5 +1,5 @@
-# herring-3067 [![stability][0]][1]
-[![build status][4]][5] [![test coverage][6]][7] [![js-standard-style][10]][11]
+# herring-3067
+[![js-standard-style][10]][11]
 
 Knows when men's day is.
 
