@@ -1,0 +1,32 @@
+#!/bin/sh
+# shellcheck disable=SC2029
+
+# upload current repo using SCP to SSH remote
+main () {
+  [ $# -ne 1 ] && { usage && exit 2; }
+
+  currdir=$(dirname "$(readlink -f "$0")")
+  basedir="$(dirname "$(readlink -f "$(readlink -f "$currdir../")../")")"
+  reponame=$(basename "$basedir")
+  outfile="/tmp/$reponame.tgz"
+  remotedir="image/"
+  host="$1"
+
+  printf "creating %s\n" "$outfile"
+  tar -czf "$outfile" "$basedir"
+
+  printf "creating %s\n" "$outfile"
+  ssh "$host" "mkdir -p $remotedir"
+
+  printf "copying %s to %s\n" "$outfile" "$host"
+  scp "$outfile" "$host:$remotedir"
+
+  printf "cleaning up %s\n" "$outfile"
+  rm "$outfile"
+}
+
+usage () {
+  printf "usage: script/deploy <ssh-remote-name>\n"
+}
+
+main "$@"
