@@ -5,28 +5,35 @@
 main () {
   [ $# -ne 1 ] && { usage && exit 2; }
 
-  currdir=$(dirname "$(readlink -f "$0")")
-  basedir="$(dirname "$(readlink -f "$(readlink -f "$currdir../")../")")"
-  reponame=$(basename "$basedir")
-  outfile="/tmp/$reponame.tgz"
-  remotedir="image/"
-  host="$1"
+  readonly currdir=$(dirname "$(readlink -f "$0")")
+  readonly basedir="$(dirname "$(readlink -f "$(readlink -f "$currdir../")../")")"
+  readonly reponame=$(basename "$basedir")
+  readonly outfile="/tmp/$reponame.tgz"
+  readonly remotedir="image/"
+  readonly host="$1"
+
+  trap clean SIGHUP SIGINT SIGTERM
 
   printf "creating %s\n" "$outfile"
-  tar -czf "$outfile" "$basedir"
+  tar -czf "$outfile" -C "$basedir" .
 
-  printf "creating %s\n" "$outfile"
+  printf "creating %s:~/%s\n" "$host" "$remotedir"
   ssh "$host" "mkdir -p $remotedir"
 
   printf "copying %s to %s\n" "$outfile" "$host"
   scp "$outfile" "$host:$remotedir"
 
-  printf "cleaning up %s\n" "$outfile"
-  rm "$outfile"
+  clean
 }
 
 usage () {
   printf "usage: script/deploy <ssh-remote-name>\n"
+}
+
+clean () {
+  printf "cleaning up %s\n" "$outfile"
+  rm "$outfile"
+  exit
 }
 
 main "$@"
